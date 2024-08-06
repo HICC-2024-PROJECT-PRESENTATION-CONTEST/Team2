@@ -18,8 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from mainapp import views
 
+from django.urls import path
+from . import views
+
 urlpatterns = [
-    path('translate_txt/', views.translate),
-    path('summary/', views.summary),
-    path('translate_pdf/', views.pdfTranslate),
+    path('', views.home, name='home'),  # 루트 URL (기본 페이지)
+    path('translate/', views.translate, name='translate'),  # 번역 페이지
+    path('summary/', views.summary, name='summary'),
+    path('pdf-translate/', views.pdfTranslate, name='pdftranslate'),
 ]

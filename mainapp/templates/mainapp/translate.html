@@ -3,81 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sample Page</title>
+    <title>번역기</title>
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
+        body {
             font-family: Arial, sans-serif;
-        }
-        .background {
-            background-image: url('https://img.freepik.com/free-photo/bright-blue-sky-with-clouds-background_53876-104103.jpg?t=st=1722600983~exp=1722604583~hmac=0e7b6526a9fc66db92b3d3f42680ba225d6a666ba8207fe9d66a00f3783f58af&w=900');
-            height: 100%;
-            width: 100%;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
+            height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
         }
-        .logo {
-            width: 50%;
-            max-width: 600px;
-        }
-        .buttons {
-            position: absolute;
-            bottom: 20px;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.8);
+        .translator-container {
+            background-color: white;
+            width: 80%;
             padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
-        .button {
+        .translator-container h1 {
+            text-align: center;
+            color: #2db400;
+            margin-bottom: 20px;
+        }
+        .translator-box {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            padding: 15px 25px;
+        }
+        .translator-container textarea, .translator-container .result {
+            width: 45%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             font-size: 16px;
+        }
+        .translator-container .result {
+            background-color: #f9f9f9;
+            overflow-y: auto;
+        }
+        .translator-container button {
+            padding: 10px;
+            background-color: #2db400;
             color: white;
-            background-color: #007BFF;
             border: none;
             border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
-            text-decoration: none;
-            text-align: center;
+            height: 40px;
         }
-        .button img {
-            width: 20px;
-            height: 20px;
-        }
-        .button:hover {
-            background-color: #0056b3;
+        .translator-container button:hover {
+            background-color: #249d00;
         }
     </style>
 </head>
 <body>
-    <div class="background">
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjq9LJak45k1eZi_TyWyOSy5nU3KetpbfDluj9aty3-1WptLYlvwfZTZIOiaJtf1LPxx0WEsO-XXzOCDlPpY4ymL1Rm8tgdZ1yUOnQbsgUT8Ri1CEA12UGV7lNISQ66dAWvB7QWj0kRlOBa/s1600/3034007-slide-s-3-whats-the-difference-between-a-logo-and-a-symbol.jpg" alt="Logo" class="logo">
-        <div class="buttons">
-            <div class="button-group">
-                <a href="txt.html" class="button">
-                    <img src="https://example.com/your-icon.png" alt="Icon"> txt로 하기
-                </a>
-                <a href="your-pdf-link.pdf" class="button">
-                    <img src="https://example.com/your-icon.png" alt="Icon"> pdf로 하기
-                </a>
-            </div>
+    <div class="translator-container">
+        <h1>번역기</h1>
+        <div class="translator-box">
+            <textarea id="sourceText" placeholder="번역할 텍스트를 입력하세요"></textarea>
+            <button onclick="translateText()">번역하기</button>
+            <div class="result" id="resultText">번역 결과가 여기에 표시됩니다</div>
         </div>
     </div>
+
+    <script>
+        function translateText() {
+            const sourceText = document.getElementById('sourceText').value;
+            const resultText = document.getElementById('resultText');
+
+            // 여기에 번역 API 호출 로직을 추가할 수 있습니다.
+            // 예시로 간단히 텍스트를 반대로 뒤집는 기능을 구현합니다.
+            const translatedText = sourceText.split('').reverse().join('');
+            resultText.textContent = translatedText;
+        }
+    </script>
 </body>
 </html>
