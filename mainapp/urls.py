@@ -22,8 +22,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),  # 루트 URL (기본 페이지)
-    path('translate/', views.translate, name='translate'),  # 번역 페이지
-    path('summary/', views.summary, name='summary'),
+    path('', views.home, name='home'),
+    path('translate/', views.translate, name='translate'),
+    path('summarize_text/', views.translate_and_summarize, name='summarize_text'),  # 요약 요청을 처리할 URL 추가
     path('pdf-translate/', views.pdfTranslate, name='pdftranslate'),
 ]
