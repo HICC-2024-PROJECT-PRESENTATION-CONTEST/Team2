@@ -6,6 +6,7 @@ from django.conf import settings
 # OpenAI API 키 설정
 openai.api_key = settings.OPENAI_API_KEY
 
+
 def home(request):
     return render(request, 'mainapp/home.html')
 
@@ -39,8 +40,10 @@ def translate_text(english_text):
         print(f"Error: {e}")  # 에러를 로그에 출력
         return '번역 실패'
 
+
 def summary(request):
     return render(request, 'mainapp/summary.html')
+
 
 def pdfTranslate(request):
     return render(request, 'mainapp/pdfTranslate.html')
