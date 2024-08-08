@@ -1,0 +1,18 @@
+[33mcommit 4c5f2eb92c6d2dad37d347d62f38fe7fb85eedc2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: kms9911 <kms75229911@gmail.com>
+Date:   Thu Aug 8 22:42:06 2024 +0900
+
+    Update secret key and other settings
+
+[33mcommit 47870aa5da1c50bc39c64d1df46391eb1d0e8d65[m
+Merge: f042fd1 310df7d
+Author: kms9911 <kms75229911@gmail.com>
+Date:   Thu Aug 8 22:38:48 2024 +0900
+
+    충돌 해결: mainapp/views.py
+
+[33mcommit f042fd14c82d336cf207bc3cdb61adc8acac98de[m
+Author: kms9911 <kms75229911@gmail.com>
+Date:   Thu Aug 8 22:34:19 2024 +0900
+
+    Update secret key and other settings
