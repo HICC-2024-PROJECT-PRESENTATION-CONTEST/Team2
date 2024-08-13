@@ -73,3 +73,26 @@ def summary(request):
 
 def pdfTranslate(request):
     return render(request, 'mainapp/pdftranslate.html')
+
+
+def define_term(request):
+    term = request.GET.get('term')
+    if not term:
+        return JsonResponse({'definition': '용어가 제공되지 않았습니다.'}, status=400)
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system",
+                 "content": "You are an expert assistant that provides detailed definitions of technical terms."},
+                {"role": "user", "content": f"Define the following term in Korean: {term}"}
+            ],
+            max_tokens=512,
+            temperature=0.5,
+        )
+        definition = response.choices[0].message['content'].strip()
+        return JsonResponse({'definition': definition})
+    except Exception as e:
+        print(f"Error: {e}")  # 에러를 로그에 출력
+        return JsonResponse({'definition': '정의 실패'}, status=500)
