@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Translate, Summarize, and Define</title>
+    <script>
+        function translateText() {
+            const englishText = document.getElementById('english_text').value;
+            fetch('/translate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: `english_text=${encodeURIComponent(englishText)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('translated_text').innerText = data.translated_text;
+                document.getElementById('summarized_text').innerText = ''; // 요약문 초기화
+                document.getElementById('definition_text').innerText = ''; // 정의 초기화
+            });
+        }
+
+        function summarizeText() {
+            const textToSummarize = document.getElementById('translated_text').innerText;
+            fetch('/summarize_text/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: `english_text=${encodeURIComponent(textToSummarize)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('summarized_text').innerText = data.summarized_text;
+            });
+        }
+
+        function defineTerm() {
+            const term = document.getElementById('term_to_define').value;
+            fetch(`/define/?term=${encodeURIComponent(term)}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('definition_text').innerText = data.definition;
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Translate, Summarize, and Define</h1>
+
+    <h2>Translate and Summarize</h2>
+    <textarea id="english_text" rows="4" cols="50" placeholder="Enter English text to translate"></textarea><br>
+    <button onclick="translateText()">Translate</button>
+
+    <h3>Translated Text</h3>
+    <p id="translated_text"></p>
+    <button onclick="summarizeText()">Summarize</button>
+
+    <h3>Summarized Text</h3>
+    <p id="summarized_text"></p>
+
+    <h2>Define a Term</h2>
+    <input type="text" id="term_to_define" placeholder="Enter term to define"><br>
+    <button onclick="defineTerm()">Get Definition</button>
+
+    <h3>Definition</h3>
+    <p id="definition_text"></p>
+</body>
+</html>
