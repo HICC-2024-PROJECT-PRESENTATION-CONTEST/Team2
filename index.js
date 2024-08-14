@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (txtButton) {
         txtButton.addEventListener('click', function() {
-            window.location.href = 'text_tr.html';  // Navigate to the text_tr.html page
+            window.location.href = 'text_tr_improved.html';  // Navigate to the text_tr.html page
         });
     }
 });

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html, body {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <div class="w-full h-full bg-white flex flex-col items-center justify-center relative">
+        <header class="w-full h-[67px] flex items-center justify-between px-8 border-b border-gray-300">
+            <svg width="21" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 8H20M1 1H20M1 15H20" stroke="#777777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <a href="home_improved.html" class="text-xl text-center">
+                <span class="text-[#a8a6a6]">TRAN</span><span class="text-[#9dd7c3]">S</span><span class="text-[#a8a6a6]">TUDY</span>
+            </a>
+            <div class="flex gap-4">
+                <button class="px-4 py-2 rounded-[25px] border border-[#777] text-sm text-[#777]">Log in</button>
+                <button class="px-4 py-2 rounded-[25px] bg-[#a8a6a6] text-sm text-white">Sign up</button>
+            </div>
+        </header>
+        <div class="text-center">
+            <h1 class="text-7xl font-bold">
+                <span class="text-black">TRAN</span><span class="text-[#9dd7c3]">S</span><span class="text-black">TUDY</span>
+            </h1>
+            <div class="flex justify-center gap-16 mt-16">
+                <button class="flex items-center gap-2 px-8 py-4 rounded-lg bg-white border-4 border-[#9dd7c3] shadow-md" onclick="window.location.href='text_tr_improved.html'">
+                    <p class="text-base font-semibold text-[#6eaa96]">TXT로 변환하기</p>
+                    <img src="rectangle-1.png" alt="TXT Icon" class="w-8 h-8" />
+                </button>
+                <button class="flex items-center gap-2 px-8 py-4 rounded-lg bg-white border-4 border-[#9dd7c3] shadow-md">
+                    <p class="text-base font-semibold text-[#6eaa96]">PDF로 변환하기</p>
+                    <img src="rectangle-1-2.png" alt="PDF Icon" class="w-8 h-8" />
+                </button>
+            </div>
+            <p class="mt-8 text-sm text-[#777]">Chat GPT 기반 강의 자료 번역·요약기</p>
+        </div>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>
