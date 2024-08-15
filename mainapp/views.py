@@ -1,13 +1,8 @@
-import openai
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.conf import settings
 import fitz  # PyMuPDF
 from reportlab.pdfgen import canvas
-from django.http import HttpResponse
-from django.shortcuts import render
-from io import BytesIO
-import openai
 from pptx import Presentation
 from pptx.util import Inches
 import openai
