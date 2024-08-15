@@ -27,4 +27,5 @@ urlpatterns = [
     path('summarize_text/', views.translate_and_summarize, name='summarize_text'),  # 요약 요청을 처리할 URL 추가
     path('pdf-translate/', views.pdfTranslate, name='pdftranslate'),
     path('define/', views.define_term, name='define_term'),
+    path('ppt-translate/', views.pptTranslate, name='ppttranslate'),
 ]

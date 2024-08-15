@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PPT Translate</title>
+</head>
+<body>
+    <h1>Upload a PPT to Translate</h1>
+    <form action="{% url 'ppttranslate' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="ppt_file" accept=".pptx" required>
+        <button type="submit">Translate</button>
+    </form>
+</body>
+</html>
