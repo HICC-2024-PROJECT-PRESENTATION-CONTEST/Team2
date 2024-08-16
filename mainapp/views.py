@@ -1,11 +1,20 @@
-import openai
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.conf import settings
-from io import BytesIO
 import fitz  # PyMuPDF
 from reportlab.pdfgen import canvas
+from pptx.util import Inches
+import openai
+from django.http import HttpResponse
+from django.shortcuts import render
+from io import BytesIO
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
+from pptx.util import Pt
 from pptx import Presentation
+from io import BytesIO
+from django.http import HttpResponse
+
 
 # OpenAI API 키 설정
 openai.api_key = settings.OPENAI_API_KEY
@@ -102,47 +111,88 @@ def pdfTranslate(request):
     if request.method == 'POST' and request.FILES.get('pdf_file'):
         pdf_file = request.FILES['pdf_file']
 
+        # PDF 파일을 읽기 위한 PyMuPDF 사용
         pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
         translated_pdf = BytesIO()
         c = canvas.Canvas(translated_pdf)
 
+        # 모든 페이지를 순회하여 번역 및 새로운 PDF 작성
         for page_num in range(len(pdf_document)):
             page = pdf_document.load_page(page_num)
             text = page.get_text()
-            translated_text = translate_text(text, 'en', 'ko')
+            translated_text = translate_text(text)
 
-            c.drawString(72, 800, translated_text)
+            # Translate the text and write it to the new PDF
+            c.drawString(72, 800, translated_text)  # 위치를 적절히 조정해야 할 수 있음
             c.showPage()
 
         c.save()
         translated_pdf.seek(0)
 
+        # PDF를 클라이언트에 반환
         response = HttpResponse(translated_pdf, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="translated.pdf"'
         return response
 
     return render(request, 'mainapp/pdftranslate.html')
 
+
+def adjust_text_in_box(shape, translated_text):
+    text_frame = shape.text_frame
+    text_frame.clear()  # 기존 텍스트 삭제
+    p = text_frame.add_paragraph()
+    p.text = translated_text
+
+    # 기본 폰트 크기와 스타일 설정
+    if shape.text_frame.paragraphs and shape.text_frame.paragraphs[0].runs:
+        first_run = shape.text_frame.paragraphs[0].runs[0]
+        p.font.size = first_run.font.size or Pt(18)  # 기본 폰트 크기 설정
+        p.font.bold = first_run.font.bold
+        p.font.italic = first_run.font.italic
+        p.alignment = shape.text_frame.paragraphs[0].alignment
+
+    # 텍스트가 박스 안에 잘 맞지 않으면 글자 크기 줄이기
+    while True:
+        try:
+            fit_result = text_frame.fit_text()
+            if fit_result is None:
+                break  # fit_text가 None을 반환하면 루프 종료
+
+            # 텍스트가 잘 맞도록 조정
+            if not fit_result and p.font.size and p.font.size.pt > 10:
+                p.font.size = Pt(p.font.size.pt - 1)
+            else:
+                break  # 더 이상 줄일 수 없거나 텍스트가 맞으면 루프 종료
+
+        except TypeError as e:
+            print(f"TypeError encountered: {e}")
+            break  # TypeError 발생 시 루프 종료
+
 def pptTranslate(request):
     if request.method == 'POST' and request.FILES.get('ppt_file'):
         ppt_file = request.FILES['ppt_file']
-
+        source_language = request.POST.get('source_language')
+        target_language = request.POST.get('target_language')
         presentation = Presentation(ppt_file)
         translated_ppt = BytesIO()
 
         for slide in presentation.slides:
             for shape in slide.shapes:
-                if hasattr(shape, "text"):
+                if shape.has_text_frame:
                     original_text = shape.text.strip()
                     if original_text:
-                        translated_text = translate_text(original_text, 'en', 'ko')
-                        shape.text = translated_text
+                        # 번역 함수에 선택된 언어를 전달
+                        translated_text = translate_text(original_text, source_language, target_language)
+                        adjust_text_in_box(shape, translated_text)
+                    else:
+                        # 텍스트가 없으면 텍스트 상자를 그대로 유지
+                        pass
 
         presentation.save(translated_ppt)
         translated_ppt.seek(0)
 
         response = HttpResponse(translated_ppt,
-        content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+                                content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
         response['Content-Disposition'] = 'attachment; filename="translated.pptx"'
         return response
 

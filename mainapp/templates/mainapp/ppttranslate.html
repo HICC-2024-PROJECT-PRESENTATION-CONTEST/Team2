@@ -7,6 +7,21 @@
     <h1>Upload a PPT to Translate</h1>
     <form action="{% url 'ppttranslate' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        <label for="source_language">Source Language:</label>
+        <select name="source_language" id="source_language" required>
+            <option value="en">English</option>
+            <option value="ko">Korean</option>
+            <!-- 필요한 언어를 추가 -->
+        </select>
+
+        <label for="target_language">Target Language:</label>
+        <select name="target_language" id="target_language" required>
+            <option value="ko">Korean</option>
+            <option value="en">English</option>
+            <!-- 필요한 언어를 추가 -->
+        </select>
+
+        <br><br>
         <input type="file" name="ppt_file" accept=".pptx" required>
         <button type="submit">Translate</button>
     </form>
