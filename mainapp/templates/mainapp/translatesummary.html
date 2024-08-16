@@ -6,35 +6,35 @@
     <script>
         function translateText() {
             const englishText = document.getElementById('english_text').value;
-            fetch('/translate/', {
+            fetch('/translate_text/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': '{{ csrf_token }}',
                 },
-                body: `english_text=${encodeURIComponent(englishText)}`
+                body: `source_language=en&target_language=ko&text=${encodeURIComponent(englishText)}`
             })
             .then(response => response.json())
             .then(data => {
                 document.getElementById('translated_text').innerText = data.translated_text;
-                document.getElementById('summarized_text').innerText = ''; // 요약문 초기화
-                document.getElementById('definition_text').innerText = ''; // 정의 초기화
+                document.getElementById('summarized_text').innerText = '';
+                document.getElementById('definition_text').innerText = '';
             });
         }
 
         function summarizeText() {
             const textToSummarize = document.getElementById('translated_text').innerText;
-            fetch('/summarize_text/', {
+            fetch('/summary/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': '{{ csrf_token }}',
                 },
-                body: `english_text=${encodeURIComponent(textToSummarize)}`
+                body: `text=${encodeURIComponent(textToSummarize)}`
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('summarized_text').innerText = data.summarized_text;
+                document.getElementById('summarized_text').innerText = data.summary;
             });
         }
 
