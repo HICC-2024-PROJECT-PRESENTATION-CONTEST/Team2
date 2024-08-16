@@ -1,20 +1,15 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.conf import settings
 import fitz  # PyMuPDF
 from reportlab.pdfgen import canvas
+from pptx import Presentation
 from pptx.util import Inches
 import openai
-from django.http import HttpResponse
-from django.shortcuts import render
 from io import BytesIO
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Pt
-from pptx import Presentation
-from io import BytesIO
-from django.http import HttpResponse
-
 
 # OpenAI API 키 설정
 openai.api_key = settings.OPENAI_API_KEY
@@ -73,7 +68,7 @@ def get_summary(text):
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a summary assistant that summarizes text."},
-                {"role": "user", "content": f"Summarize the following text: {text}"}
+                {"role": "user", "content": f"Summarize the following text in Korean: {text}"}
             ],
             max_tokens=512,
             temperature=0.5,
@@ -106,7 +101,6 @@ def define_term(request):
         print(f"Error: {e}")
         return JsonResponse({'definition': '정의 실패'}, status=500)
 
-
 def pdfTranslate(request):
     if request.method == 'POST' and request.FILES.get('pdf_file'):
         pdf_file = request.FILES['pdf_file']
@@ -122,7 +116,7 @@ def pdfTranslate(request):
             text = page.get_text()
             translated_text = translate_text(text)
 
-            # Translate the text and write it to the new PDF
+            # 번역된 텍스트를 새 PDF에 작성
             c.drawString(72, 800, translated_text)  # 위치를 적절히 조정해야 할 수 있음
             c.showPage()
 
@@ -135,7 +129,6 @@ def pdfTranslate(request):
         return response
 
     return render(request, 'mainapp/pdftranslate.html')
-
 
 def adjust_text_in_box(shape, translated_text):
     text_frame = shape.text_frame
