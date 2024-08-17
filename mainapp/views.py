@@ -1,3 +1,4 @@
+import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import cpu_count
 from django.http import JsonResponse, HttpResponse
@@ -21,16 +22,17 @@ def home(request):
 
 def translate(request):
     if request.method == 'POST':
-        source_language = request.POST.get('source_language')
-        target_language = request.POST.get('target_language')
-        text = request.POST.get('text')
+        data = json.loads(request.body)
+        source_language = data['source_language']
+        target_language = data['target_language']
+        text = data['text']
 
         if not text:
             return JsonResponse({'translated_text': '텍스트가 비어 있습니다.'}, status=400)
 
         translated_text = translate_text(text, source_language, target_language)
         return JsonResponse({'translated_text': translated_text})
-    return render(request, 'mainapp/translatesummary.html')
+    return render(request, 'mainapp/text_tr_improved.html')
 
 def translate_text(text, source_language, target_language):
     if not text.strip():

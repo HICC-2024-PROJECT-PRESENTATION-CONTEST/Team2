@@ -32,14 +32,15 @@
     <main class="flex flex-col items-start gap-10 px-8 py-10">
         <div class="w-full flex gap-8">
             <!-- Original Text Section -->
-            <div class="flex flex-col gap-6 w-1/2">
+            <form action="{% url 'translate_text' %}" class="flex flex-col gap-6 w-1/2">
+                {% csrf_token %}
                 <div class="flex flex-col gap-6 p-4 rounded-[10px] bg-white border border-[#9dd7c3]">
                     <label for="originalText" class="text-sm text-left text-[#777]">원문</label>
                     <textarea id="originalText" class="w-full h-[370px] p-2 text-2xl text-left text-[#a8a6a6] border border-[#9dd7c3] rounded-[10px]" placeholder="텍스트를 입력하세요."></textarea>
-                    <button class="self-end px-4 py-2 mt-4 rounded-[11px] bg-[#83ccb4] text-lg font-semibold text-white">번역하기</button>
+                    <button class="translateButton self-end px-4 py-2 mt-4 rounded-[11px] bg-[#83ccb4] text-lg font-semibold text-white">번역하기</button>
                 </div>
                 <div id="wordExplanation" class="w-full p-2 text-lg text-left text-black border border-[#9dd7c3] rounded-[10px] mt-4 overflow-auto"></div>
-            </div>
+            </form>
     
             <!-- Translated Text Section -->
             <div class="flex flex-col gap-6 w-1/2">
@@ -48,12 +49,65 @@
                     <div id="translatedText" class="h-[370px] p-4 text-2xl text-left text-black border border-[#9dd7c3] rounded-[10px] overflow-auto" >
                         번역 결과가 표시됩니다.
                     </div>
-                    <button class="self-end px-4 py-2 mt-4 rounded-[11px] bg-[#9dd7c3] text-lg font-semibold text-white">요약 하기</button>
+                    <button class="summaryButton self-end px-4 py-2 mt-4 rounded-[11px] bg-[#9dd7c3] text-lg font-semibold text-white">요약 하기</button>
                 </div>
                 <div id="summaryText" class="w-full p-2 text-lg text-left text-black border border-[#9dd7c3] rounded-[10px] mt-4 overflow-auto"></div>
             </div>
         </div>
     </main>    
-    <script src="index.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+    const originalTextArea = document.getElementById("originalText");
+    const translateButton = document.querySelector(".translateButton");
+    const translatedTextArea = document.getElementById("translatedText");
+    const summeryButton = document.querySelector(".summaryButton");
+    const summmerizedTextArea = document.getElementById("summaryText");
+
+    // 1. 번역하기
+    translateButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        if (originalTextArea.value.length > 4000) {
+            alert('입력 가능한 최대 글자 수는 4000자입니다. 글자를 줄여주세요.');
+            return;
+        }
+
+        fetch('/translate_text/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                source_language: 'English',
+                target_language: 'Korean',
+                text: originalTextArea.value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            translatedTextArea.innerText = data.translated_text;
+            originalTextArea.setAttribute("readonly", true);
+            originalTextArea.style.backgroundColor = "#f3f3f3";
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // 3. 요약하기
+    summeryButton.addEventListener("click", function() {
+        fetch('/summarize_text/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ english_text: translatedTextArea.innerText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            summmerizedTextArea.innerText = data.summary;  // 서버 응답의 키 이름과 맞춰야 함
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+    </script>
 </body>
 
