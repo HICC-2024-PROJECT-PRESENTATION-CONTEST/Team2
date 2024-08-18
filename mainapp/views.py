@@ -4,21 +4,21 @@ from multiprocessing import cpu_count
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.conf import settings
-import fitz  # PyMuPDF
-from reportlab.pdfgen import canvas
 from pptx import Presentation
-from pptx.util import Inches
+from pptx.util import Inches, Pt
 import openai
 from io import BytesIO
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from pptx.util import Pt
 
 # OpenAI API 키 설정
 openai.api_key = settings.OPENAI_API_KEY
 
+# 현재 기기의 코어 개수를 기반으로 최대 병렬 처리 개수 설정
+max_workers = cpu_count()
+
+
 def home(request):
     return render(request, 'mainapp/home.html')
+
 
 def translate(request):
     if request.method == 'POST':
@@ -33,6 +33,7 @@ def translate(request):
         translated_text = translate_text(text, source_language, target_language)
         return JsonResponse({'translated_text': translated_text})
     return render(request, 'mainapp/text_tr_improved.html')
+
 
 def translate_text(text, source_language, target_language):
     if not text.strip():
@@ -56,6 +57,7 @@ def translate_text(text, source_language, target_language):
         print(f"Error: {e}")
         return '번역 실패'
 
+
 def summarize_text(request):
     if request.method == 'POST':
         text = request.POST.get('text')
@@ -65,6 +67,7 @@ def summarize_text(request):
         summarized_text = get_summary(text)
         return JsonResponse({'summary': summarized_text})
     return JsonResponse({'error': '잘못된 요청입니다.'}, status=400)
+
 
 def get_summary(text):
     try:
@@ -82,6 +85,7 @@ def get_summary(text):
     except Exception as e:
         print(f"Error: {e}")
         return '요약 실패'
+
 
 def define_term(request):
     term = request.GET.get('term')
@@ -104,35 +108,6 @@ def define_term(request):
     except Exception as e:
         print(f"Error: {e}")
         return JsonResponse({'definition': '정의 실패'}, status=500)
-
-def pdfTranslate(request):
-    if request.method == 'POST' and request.FILES.get('pdf_file'):
-        pdf_file = request.FILES['pdf_file']
-
-        # PDF 파일을 읽기 위한 PyMuPDF 사용
-        pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
-        translated_pdf = BytesIO()
-        c = canvas.Canvas(translated_pdf)
-
-        # 모든 페이지를 순회하여 번역 및 새로운 PDF 작성
-        for page_num in range(len(pdf_document)):
-            page = pdf_document.load_page(page_num)
-            text = page.get_text()
-            translated_text = translate_text(text)
-
-            # 번역된 텍스트를 새 PDF에 작성
-            c.drawString(72, 800, translated_text)  # 위치를 적절히 조정해야 할 수 있음
-            c.showPage()
-
-        c.save()
-        translated_pdf.seek(0)
-
-        # PDF를 클라이언트에 반환
-        response = HttpResponse(translated_pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="translated.pdf"'
-        return response
-
-    return render(request, 'mainapp/pdftranslate.html')
 
 
 def translate_text_with_context(text, source_language, target_language):
@@ -162,9 +137,6 @@ def translate_text_with_context(text, source_language, target_language):
         print(f"Error: {e}")
         return '번역 실패'
 
-# 현재 기기의 코어 개수를 기반으로 최대 병렬 처리 개수 설정
-max_workers = cpu_count()
-
 
 def adjust_text_in_box(shape, translated_text, slide):
     text_frame = shape.text_frame
@@ -179,9 +151,11 @@ def adjust_text_in_box(shape, translated_text, slide):
         original_font_size = first_run.font.size  # 원본 텍스트 크기 저장
         original_alignment = shape.text_frame.paragraphs[0].alignment  # 원본 정렬 저장
 
-    text_frame.clear()  # 기존 텍스트 삭제
-    p = text_frame.add_paragraph()
-    p.text = translated_text
+    # 기존 텍스트를 번역된 텍스트로 대체
+    if text_frame.paragraphs:
+        p = text_frame.paragraphs[0]  # 첫 번째 단락을 가져옴
+        p.clear()  # 기존 텍스트 삭제
+        p.text = translated_text  # 번역된 텍스트 추가
 
     # 원본 글자 크기와 정렬 설정
     if original_font_size:
@@ -234,6 +208,7 @@ def translate_shape_text(shape, slide, source_language, target_language):
         translated_text = translate_text_with_context(original_text, source_language, target_language)
         adjust_text_in_box(shape, translated_text, slide)
     return shape
+
 
 
 def pptTranslate(request):
