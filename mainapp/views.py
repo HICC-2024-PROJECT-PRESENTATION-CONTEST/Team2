@@ -225,7 +225,7 @@ def translate_shape_text(shape, slide, source_language, target_language):
             translated_text = translate_text_with_context(original_text, source_language, target_language)
             adjust_text_in_box(shape, translated_text, slide)
     return shape
-
+@csrf_exempt
 def pptTranslate(request):
     if request.method == 'POST' and request.FILES.get('ppt_file'):
         ppt_file = request.FILES['ppt_file']
