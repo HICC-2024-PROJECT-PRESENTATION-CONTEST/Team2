@@ -24,7 +24,7 @@ max_workers = cpu_count()
 
 
 def home(request):
-    return render(request, 'mainapp/home.html')
+    return render(request, 'mainapp/home_improved.html')
 
 
 @csrf_exempt
@@ -55,8 +55,10 @@ def translate_text(text, source_language, target_language):
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-1106",
             messages=[
-                {"role": "system", "content": f"You are a translation assistant that translates {source_language} text to {target_language}."},
-                {"role": "user", "content": f"Translate the following text from {source_language} to {target_language}: {text}"}
+                {"role": "system",
+                 "content": f"You are a translation assistant that translates {source_language} text to {target_language}."},
+                {"role": "user",
+                 "content": f"Translate the following text from {source_language} to {target_language}: {text}"}
             ],
             max_tokens=1024,
             temperature=0.5,
@@ -110,8 +112,7 @@ def define_term(request):
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system",
-                 "content": "You are an expert assistant that provides detailed definitions of technical terms in Korean."},
+                {"role": "system", "content": "You are an expert assistant that provides detailed definitions of technical terms in Korean."},
                 {"role": "user", "content": f"Define the following term in Korean: {term}"}
             ],
             max_tokens=512,
@@ -160,20 +161,22 @@ def adjust_text_in_box(shape, translated_text, slide):
     original_height = shape.height  # 원본 텍스트 박스 높이 저장
 
     # 원본 텍스트 속성 보존
-    if shape.text_frame.paragraphs and shape.text_frame.paragraphs[0].runs:
-        first_run = shape.text_frame.paragraphs[0].runs[0]
+    if text_frame.paragraphs and text_frame.paragraphs[0].runs:
+        first_run = text_frame.paragraphs[0].runs[0]
         original_font_size = first_run.font.size  # 원본 텍스트 크기 저장
-        original_alignment = shape.text_frame.paragraphs[0].alignment  # 원본 정렬 저장
+        original_alignment = text_frame.paragraphs[0].alignment  # 원본 정렬 저장
 
-    # 기존 텍스트를 번역된 텍스트로 대체
-    if text_frame.paragraphs:
-        p = text_frame.paragraphs[0]  # 첫 번째 단락을 가져옴
-        p.clear()  # 기존 텍스트 삭제
-        p.text = translated_text  # 번역된 텍스트 추가
+    # 기존 텍스트를 완전히 제거
+    text_frame.clear()
+
+    # 첫 번째 단락에 번역된 텍스트 추가
+    p = text_frame.paragraphs[0]  # 기존 단락을 가져옴
+    run = p.add_run()
+    run.text = translated_text  # 번역된 텍스트 추가
 
     # 원본 글자 크기와 정렬 설정
     if original_font_size:
-        p.font.size = original_font_size
+        run.font.size = original_font_size
     if original_alignment:
         p.alignment = original_alignment
 
@@ -191,13 +194,13 @@ def adjust_text_in_box(shape, translated_text, slide):
 
     # 텍스트 상자가 텍스트 프레임보다 작을 경우 크기 조정
     while True:
-        # 텍스트 프레임이 상자에 잘 맞는지 확인 (단순히 크기를 기준으로 비교)
+        # 텍스트 프레임이 상자에 잘 맞는지 확인
         text_box_width = shape.width
         text_box_height = shape.height
 
-        # 현재 텍스트 프레임의 크기를 확인
+        # 텍스트가 상자에 맞으면 루프 종료
         if text_box_width >= shape.width and text_box_height >= shape.height:
-            break  # 텍스트가 상자에 맞으면 루프 종료
+            break
 
         # 텍스트 상자의 너비와 높이를 늘려서 텍스트가 들어갈 수 있게 조정
         shape.width += Inches(0.1)  # 너비를 약간 늘림
@@ -215,15 +218,13 @@ def adjust_text_in_box(shape, translated_text, slide):
             break
 
 
-
 def translate_shape_text(shape, slide, source_language, target_language):
-    original_text = shape.text.strip()
-    if original_text:
-        translated_text = translate_text_with_context(original_text, source_language, target_language)
-        adjust_text_in_box(shape, translated_text, slide)
+    if shape.has_text_frame and shape.text_frame.text.strip():
+        original_text = shape.text_frame.text.strip()
+        if original_text:
+            translated_text = translate_text_with_context(original_text, source_language, target_language)
+            adjust_text_in_box(shape, translated_text, slide)
     return shape
-
-
 
 def pptTranslate(request):
     if request.method == 'POST' and request.FILES.get('ppt_file'):
@@ -237,7 +238,8 @@ def pptTranslate(request):
             futures = []
             for slide in presentation.slides:
                 for shape in slide.shapes:
-                    if shape.has_text_frame:
+                    # 이미지 등 텍스트가 아닌 요소는 제외
+                    if shape.has_text_frame and shape.text_frame.text.strip():
                         # translate_shape_text 함수에 slide 인자를 추가하여 전달
                         futures.append(executor.submit(translate_shape_text, shape, slide, source_language, target_language))
 
@@ -253,3 +255,9 @@ def pptTranslate(request):
         return response
 
     return render(request, 'mainapp/ppttranslate.html')
+
+
+
+
+
+
