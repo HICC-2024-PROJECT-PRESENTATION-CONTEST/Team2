@@ -4,10 +4,17 @@ from multiprocessing import cpu_count
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from pptx import Presentation
 from pptx.util import Inches, Pt
 import openai
 from io import BytesIO
+
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'HICC_PROJECT.settings')
+
+from django.conf import settings
+import openai
 
 # OpenAI API 키 설정
 openai.api_key = settings.OPENAI_API_KEY
@@ -20,18 +27,23 @@ def home(request):
     return render(request, 'mainapp/home.html')
 
 
+@csrf_exempt
 def translate(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         source_language = data['source_language']
         target_language = data['target_language']
         text = data['text']
+        print(f"Received text: {text}")  # 디버깅용 임시코드
 
         if not text:
             return JsonResponse({'translated_text': '텍스트가 비어 있습니다.'}, status=400)
 
         translated_text = translate_text(text, source_language, target_language)
+        print(f"Translated text: {translated_text}")  # 디버깅용 임시코드
         return JsonResponse({'translated_text': translated_text})
+    else:
+        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
     return render(request, 'mainapp/text_tr_improved.html')
 
 
@@ -49,6 +61,7 @@ def translate_text(text, source_language, target_language):
             max_tokens=1024,
             temperature=0.5,
         )
+        print(f"API Response: {response}")  # 디버깅용 임시코드
         translated_text = response.choices[0].message['content'].strip()
         if not translated_text:
             return '번역 실패'
@@ -57,10 +70,11 @@ def translate_text(text, source_language, target_language):
         print(f"Error: {e}")
         return '번역 실패'
 
-
+@csrf_exempt
 def summarize_text(request):
     if request.method == 'POST':
-        text = request.POST.get('text')
+        data = json.loads(request.body)
+        text = data.get('text')
         if not text:
             return JsonResponse({'summary': '텍스트가 비어 있습니다.'}, status=400)
 
@@ -86,7 +100,7 @@ def get_summary(text):
         print(f"Error: {e}")
         return '요약 실패'
 
-
+@csrf_exempt
 def define_term(request):
     term = request.GET.get('term')
     if not term:

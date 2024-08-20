@@ -33,7 +33,6 @@
         <div class="w-full flex gap-8">
             <!-- Original Text Section -->
             <form action="{% url 'translate_text' %}" class="flex flex-col gap-6 w-1/2">
-                {% csrf_token %}
                 <div class="flex flex-col gap-6 p-4 rounded-[10px] bg-white border border-[#9dd7c3]">
                     <label for="originalText" class="text-sm text-left text-[#777]">원문</label>
                     <textarea id="originalText" class="w-full h-[370px] p-2 text-2xl text-left text-[#a8a6a6] border border-[#9dd7c3] rounded-[10px]" placeholder="텍스트를 입력하세요."></textarea>
@@ -59,9 +58,11 @@
         document.addEventListener("DOMContentLoaded", function() {
     const originalTextArea = document.getElementById("originalText");
     const translateButton = document.querySelector(".translateButton");
+    const wordExplanation = document.getElementById("wordExplanation");
     const translatedTextArea = document.getElementById("translatedText");
     const summeryButton = document.querySelector(".summaryButton");
-    const summmerizedTextArea = document.getElementById("summaryText");
+    const summarizedTextArea = document.getElementById("summaryText");
+    const explainedTerms = new Set();
 
     // 1. 번역하기
     translateButton.addEventListener("click", function(event) {
@@ -71,7 +72,7 @@
             return;
         }
 
-        fetch('/translate_text/', {
+        fetch('http://localhost:8000/translate_text/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -83,31 +84,70 @@
                 text: originalTextArea.value
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            translatedTextArea.innerText = data.translated_text;
-            originalTextArea.setAttribute("readonly", true);
-            originalTextArea.style.backgroundColor = "#f3f3f3";
-        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();  // JSON으로 바로 파싱하기 전에 텍스트로 확인
+            })
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);  // 텍스트를 JSON으로 파싱
+                    translatedTextArea.innerText = data.translated_text;
+                    originalTextArea.setAttribute("readonly", true);
+                    originalTextArea.style.backgroundColor = "#f3f3f3";
+                } catch (e) {
+                    console.error("Parsing Error: ", e);
+                    alert('응답을 처리하는 중 문제가 발생했습니다.');
+                }
+            })
         .catch(error => console.error('Error:', error));
     });
 
-    // 3. 요약하기
+    // 2. 요약하기
     summeryButton.addEventListener("click", function() {
-        fetch('/summarize_text/', {
+        fetch('http://localhost:8000/summary/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
             },
-            body: JSON.stringify({ english_text: translatedTextArea.innerText })
+            body: JSON.stringify({ text: translatedTextArea.innerText })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
-            summmerizedTextArea.innerText = data.summary;  // 서버 응답의 키 이름과 맞춰야 함
+            summarizedTextArea.innerText = data.summary;
         })
         .catch(error => console.error('Error:', error));
     });
 });
+    // 3. 어휘 설명
+    const textAreas = [originalTextArea, translatedTextArea, summarizedTextArea];
+
+    textAreas.forEach(textArea => {
+        textArea.addEventListener("mouseup", function() {
+            const selection = window.getSelection().toString().trim();
+            if (selection && !explainedTerms.has(selection)) {  // 중복 어휘는 무시
+                explainedTerms.add(selection);  // 용어를 Set에 추가
+                fetch(`http://localhost:8000/define?term=${encodeURIComponent(selection)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.definition) {
+                            const explanation = `${selection}: ${data.definition}`;
+                            wordExplanation.innerText += explanation + "\n";
+                        } else {
+                            wordExplanation.innerText += `${selection}: 정의 실패\n`;
+                        }
+                    })
+                    .catch(error => console.error("Error fetching definition:", error));
+            }
+        });
+    });
     </script>
 </body>
 
