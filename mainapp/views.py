@@ -124,7 +124,7 @@ def define_term(request):
 
 def translate_text_with_context(text, source_language, target_language):
     # 텍스트가 너무 짧거나 의미가 없을 경우 번역하지 않고 원본을 반환
-    if len(text.strip()) <= 3:
+    if len(text.strip()) <= 4:
         return text
 
     prompt = (
@@ -148,7 +148,6 @@ def translate_text_with_context(text, source_language, target_language):
     except Exception as e:
         print(f"Error: {e}")
         return '번역 실패'
-
 
 def adjust_text_in_box(shape, translated_text, slide):
     text_frame = shape.text_frame

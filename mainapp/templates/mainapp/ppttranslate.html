@@ -2,29 +2,148 @@
 <html>
 <head>
     <title>PPT Translate</title>
+    <style>
+        label {
+            background-color: #D9D9D9;
+            padding: 5px 10px; /* 패딩을 조정하여 크기를 맞춤 */
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 10px; /* 모서리를 10px로 둥글게 */
+            display: inline-block;
+            width: 150px; /* 너비를 150px로 설정하여 번역 하기 버튼과 일치 */
+            height: 25px; /* 높이를 25px로 설정 */
+            text-align: center; /* 텍스트를 가운데 정렬 */
+            line-height: 25px; /* 텍스트가 수직으로 중앙에 오도록 조정 */
+            margin-top: 10px;
+        }
+
+        label:hover {
+            background-color: white;
+            color: #9dd7c3;
+            border: 1px solid #A8A6A6;
+        }
+
+        .container {
+            width: 500px;
+            height: 370px;
+            border: 1px solid #A8A6A6; /* Border 설정: 두께 1px, 스타일 solid, 색상 #A8A6A6 */
+            border-radius: 10px;
+            display: flex; /* Flexbox로 변경 */
+            flex-direction: column; /* 수직 방향으로 배치 */
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* 그림자 효과 추가 */
+            margin: 0 auto; /* 수평 중앙 정렬 */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* 수직, 수평 중앙 정렬 */
+        }
+
+        #ppt_file {
+            display: none;
+        }
+
+        .image-container {
+            width: 49px;
+            height: 49px;
+            margin-bottom: 10px;
+        }
+
+        .text-container {
+            margin-bottom: 10px;
+            font-size: 30px;
+            color: #9dd7c3;
+            text-align: center; /* 텍스트를 중앙 정렬 */
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            width: 170px; /* 파일 찾기 버튼과 동일한 너비로 설정 */
+            height:35px;
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 10px; /* 모서리를 10px로 둥글게 설정 */
+            background-color: #D9D9D9;
+            border: none;
+            text-align: center; /* 텍스트를 중앙 정렬 */
+        }
+
+        button:hover {
+            background-color: white;
+            color: #9dd7c3;
+            border: 1px solid #A8A6A6;
+        }
+    </style>
 </head>
 <body>
-    <h1>Upload a PPT to Translate</h1>
-    <form action="{% url 'ppttranslate' %}" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="source_language">Source Language:</label>
-        <select name="source_language" id="source_language" required>
-            <option value="en">English</option>
-            <option value="ko">Korean</option>
-            <!-- 필요한 언어를 추가 -->
-        </select>
-
-        <label for="target_language">Target Language:</label>
-        <select name="target_language" id="target_language" required>
-            <option value="ko">Korean</option>
-            <option value="en">English</option>
-            <!-- 필요한 언어를 추가 -->
-        </select>
-
-        <br><br>
-        <input type="file" name="ppt_file" accept=".pptx" required>
-        <button type="submit">Translate</button>
+    <form id="pptForm" enctype="multipart/form-data">
+        <div class="container">
+            <div class="image-container">
+                <!-- 여기에 이미지 삽입 -->
+                <img src="upload.png" alt="파일 아이콘" width="49" height="49">
+            </div>
+            <div class="text-container">
+                파일을 이 곳에 올려주세요.
+            </div>
+            <label for="ppt_file">파일 찾기</label>
+            <input type="file" name="ppt_file" id="ppt_file" accept=".pptx" required>
+            <!-- 소스 언어와 타깃 언어를 숨긴 입력 필드로 고정 -->
+            <input type="hidden" name="source_language" value="en">
+            <input type="hidden" name="target_language" value="ko">
+            <div class="button-container">
+                <button type="submit">번역 하기</button>
+            </div>
+        </div>
     </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const pptForm = document.getElementById("pptForm");
+
+            pptForm.addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(pptForm);
+
+                fetch('http://localhost:8000/ppt-translate/', {  // 이 부분의 URL을 확인하세요
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob(); // Assuming the translated PPT is returned as a blob
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'translated.pptx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to translate the PPT. Please try again.');
+                });
+            });
+        });
+    </script>
 </body>
 </html>
+
+
+
+
+
 
