@@ -48,7 +48,7 @@
                     <div id="translatedText" class="h-[370px] p-4 text-2xl text-left text-black border border-[#9dd7c3] rounded-[10px] overflow-auto" >
                         번역 결과가 표시됩니다.
                     </div>
-                    <button class="summaryButton self-end px-4 py-2 mt-4 rounded-[11px] bg-[#9dd7c3] text-lg font-semibold text-white">요약 하기</button>
+                    <button class="summaryButton self-end px-4 py-2 mt-4 rounded-[11px] bg-[#9dd7c3] text-lg font-semibold text-white">요약하기</button>
                 </div>
                 <div id="summaryText" class="w-full p-2 text-lg text-left text-black border border-[#9dd7c3] rounded-[10px] mt-4 overflow-auto"></div>
             </div>
@@ -88,11 +88,11 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                return response.text();  // JSON으로 바로 파싱하기 전에 텍스트로 확인
+                return response.text();
             })
             .then(text => {
                 try {
-                    const data = JSON.parse(text);  // 텍스트를 JSON으로 파싱
+                    const data = JSON.parse(text);
                     translatedTextArea.innerText = data.translated_text;
                     originalTextArea.setAttribute("readonly", true);
                     originalTextArea.style.backgroundColor = "#f3f3f3";
@@ -127,6 +127,10 @@
     });
 });
     // 3. 어휘 설명
+        const originalTextArea = document.getElementById("originalText");
+        const summarizedTextArea = document.getElementById("summaryText");
+        const translatedTextArea = document.getElementById("translatedText");
+        const explainedTerms = new Set();
     const textAreas = [originalTextArea, translatedTextArea, summarizedTextArea];
 
     textAreas.forEach(textArea => {
@@ -134,7 +138,7 @@
             const selection = window.getSelection().toString().trim();
             if (selection && !explainedTerms.has(selection)) {  // 중복 어휘는 무시
                 explainedTerms.add(selection);  // 용어를 Set에 추가
-                fetch(`http://localhost:8000/define?term=${encodeURIComponent(selection)}`)
+                fetch(`http://localhost:8000/define/?term=${encodeURIComponent(selection)}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.definition) {
