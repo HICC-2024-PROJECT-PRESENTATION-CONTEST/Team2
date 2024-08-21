@@ -41,8 +41,6 @@ def translate(request):
         translated_text = translate_text(text, source_language, target_language)
         print(f"Translated text: {translated_text}")  # 디버깅용 임시코드
         return JsonResponse({'translated_text': translated_text})
-    else:
-        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
     return render(request, 'mainapp/text_tr_improved.html')
 
 
