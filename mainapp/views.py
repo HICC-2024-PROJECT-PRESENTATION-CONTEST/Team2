@@ -7,7 +7,6 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from pptx import Presentation
 from pptx.util import Inches, Pt
-import openai
 from io import BytesIO
 
 import os
@@ -255,6 +254,7 @@ def pptTranslate(request):
         return response
 
     return render(request, 'mainapp/ppttranslate.html')
+
 
 
 
