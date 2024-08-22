@@ -23,7 +23,7 @@ max_workers = cpu_count()
 
 
 def home(request):
-    return render(request, 'mainapp/home_improved.html')
+    return render(request, 'mainapp/home.html')
 
 
 @csrf_exempt
