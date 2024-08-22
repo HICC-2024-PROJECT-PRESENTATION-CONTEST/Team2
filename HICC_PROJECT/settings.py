@@ -1,5 +1,5 @@
 # settings.py
-
+import os
 from pathlib import Path
 from decouple import config
 
@@ -87,6 +87,14 @@ USE_TZ = True
 
 # Static files 설정
 STATIC_URL = 'static/'
+
+# STATICFILES_DIRS: 추가적인 정적 파일 경로 설정
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
+# STATIC_ROOT: collectstatic 명령어를 사용할 때 정적 파일이 모이는 경로
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
